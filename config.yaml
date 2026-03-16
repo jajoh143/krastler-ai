@@ -1,0 +1,81 @@
+# ============================================================
+# Krastler AI — main configuration
+# ============================================================
+# All sections can be overridden via CLI flags (see main.py --help).
+
+# ------------------------------------------------------------
+# Ollama
+# ------------------------------------------------------------
+ollama:
+  host: "localhost"
+  port: 11434
+  model: "llama3.2"        # Change to whichever model you have pulled
+  temperature: 0.7
+
+# ------------------------------------------------------------
+# Personality
+# ------------------------------------------------------------
+personality:
+  profile: "personality/profiles/default.yaml"
+
+# ------------------------------------------------------------
+# Audio
+# ------------------------------------------------------------
+audio:
+  enabled: true
+
+  input_device: null        # null = system default; use integer index to override
+  output_device: null       # null = system default
+  sample_rate: 16000
+  chunk_size: 1024
+  silence_threshold: 0.02   # RMS energy threshold (0.0–1.0); raise if too sensitive
+  silence_duration: 1.5     # seconds of silence before recording stops
+  min_speech_duration: 0.4  # minimum speech length to count as input
+  max_record_seconds: 30
+
+  stt:
+    engine: "faster-whisper"
+    model: "base"            # tiny | base | small (base recommended for RPi 5)
+    compute_type: "int8"     # int8 is fastest on RPi CPU
+    language: "en"
+
+  tts:
+    engine: "piper"
+    # Path to your downloaded Piper .onnx model file.
+    # Run: python setup_models.py   to download a voice automatically.
+    model_path: "models/piper/en_US-lessac-medium.onnx"
+    volume: 1.0
+    # pyttsx3 fallback settings (used only if piper is unavailable)
+    rate: 155
+    voice_index: 0
+
+# ------------------------------------------------------------
+# Vision  (disabled until hardware is attached)
+# ------------------------------------------------------------
+vision:
+  enabled: false
+  camera_index: 0
+  fps: 15
+
+# ------------------------------------------------------------
+# Conversation
+# ------------------------------------------------------------
+conversation:
+  max_turns: 20             # number of user+assistant turn pairs to keep in context
+  save_history: false       # set to true to persist across restarts
+  history_path: ".krastler_history.json"
+
+# ------------------------------------------------------------
+# Interaction mode
+# ------------------------------------------------------------
+interaction:
+  # "audio"  — full voice I/O (mic → STT → LLM → TTS → speaker)
+  # "text"   — keyboard input, printed output only
+  # "hybrid" — voice by default; fall back to text if audio not ready
+  mode: "hybrid"
+
+# ------------------------------------------------------------
+# Logging
+# ------------------------------------------------------------
+logging:
+  level: "INFO"   # DEBUG | INFO | WARNING | ERROR

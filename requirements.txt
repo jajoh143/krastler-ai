@@ -1,0 +1,34 @@
+# ============================================================
+# Krastler AI — Python dependencies
+# ============================================================
+# Install on Raspberry Pi OS (64-bit) / any Debian-based Linux:
+#   pip install -r requirements.txt
+#
+# System packages needed first (run once):
+#   sudo apt-get update
+#   sudo apt-get install -y portaudio19-dev libespeak-ng1 espeak-ng ffmpeg
+# ============================================================
+
+# --- Core ---
+requests>=2.31
+pyyaml>=6.0
+
+# --- Audio I/O ---
+sounddevice>=0.4.6
+numpy>=1.24
+
+# --- Speech-to-Text (faster-whisper, offline) ---
+faster-whisper>=1.0.0
+
+# --- Text-to-Speech ---
+# Piper TTS (high-quality, offline, great on RPi 5)
+piper-tts>=1.2.0
+# pyttsx3 is used as an automatic fallback if Piper fails
+pyttsx3>=2.90
+
+# --- Vision (optional — only needed when vision.enabled: true) ---
+# opencv-python-headless>=4.8    # uncomment to enable camera support
+
+# --- Future / Autonomous driving stub ---
+# RPi.GPIO>=0.7                   # GPIO control
+# gpiozero>=2.0                   # higher-level GPIO
