@@ -9,11 +9,9 @@ For Piper, download a voice model first:
   python setup_models.py
 """
 
-import io
 import logging
 import os
 import re
-import wave
 from typing import Optional
 
 import numpy as np
@@ -158,19 +156,15 @@ class Speaker:
         try:
             import sounddevice as sd
 
-            buf = io.BytesIO()
-            with wave.open(buf, "wb") as wf:
-                self._piper_voice.synthesize(text, wf)
-            buf.seek(0)
-            with wave.open(buf) as wf:
-                framerate = wf.getframerate()
-                n_channels = wf.getnchannels()
-                raw = wf.readframes(wf.getnframes())
-            audio = np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768.0
-            if n_channels > 1:
-                audio = audio.reshape(-1, n_channels)
+            # synthesize_stream_raw yields raw mono int16 PCM chunks,
+            # bypassing the wave module entirely and avoiding channel spec issues
+            raw_chunks = list(self._piper_voice.synthesize_stream_raw(text))
+            audio_bytes = b"".join(raw_chunks)
+            sample_rate = self._piper_voice.config.sample_rate
+
+            audio = np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32) / 32768.0
             audio = np.clip(audio * self.volume, -1.0, 1.0)
-            sd.play(audio, samplerate=framerate, channels=n_channels, device=self.output_device)
+            sd.play(audio, samplerate=sample_rate, device=self.output_device)
             sd.wait()
         except Exception:
             logger.exception("Piper playback error")
