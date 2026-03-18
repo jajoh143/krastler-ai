@@ -162,21 +162,28 @@ class Speaker:
             sample_rate = self._piper_voice.config.sample_rate
             logger.debug("Piper synthesising at %d Hz: %r", sample_rate, text[:60])
 
-            audio_chunks = []
-            for raw_bytes in self._piper_voice.synthesize_stream_raw(text):
-                chunk = np.frombuffer(raw_bytes, dtype=np.int16).astype(np.float32) / 32768.0
-                audio_chunks.append(chunk)
+            buf = io.BytesIO()
+            with wave.open(buf, "wb") as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(2)  # 16-bit PCM
+                wf.setframerate(sample_rate)
+                self._piper_voice.synthesize(text, wf)
 
-            if not audio_chunks:
+            buf.seek(0)
+            with wave.open(buf) as wf:
+                n_frames = wf.getnframes()
+                raw = wf.readframes(n_frames)
+
+            if not raw:
                 logger.warning("Piper produced no audio for: %r", text[:60])
                 return
 
-            audio = np.concatenate(audio_chunks)
+            audio = np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768.0
             audio = np.clip(audio * self.volume, -1.0, 1.0)
             logger.debug("Piper generated %d samples (%.2fs)", len(audio), len(audio) / sample_rate)
 
             play_rate = self.device_sample_rate or sample_rate
-            if play_rate != sample_rate:
+            if play_rate != sample_rate and len(audio) > 1:
                 n_samples = int(len(audio) * play_rate / sample_rate)
                 audio = np.interp(
                     np.linspace(0, len(audio) - 1, n_samples),
