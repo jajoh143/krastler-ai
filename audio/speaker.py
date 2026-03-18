@@ -37,6 +37,7 @@ class Speaker:
         self.engine: str = config.get("engine", "piper")
         self.volume: float = config.get("volume", 1.0)
         self.output_device: Optional[int] = config.get("output_device", None)
+        self.device_sample_rate: Optional[int] = config.get("device_sample_rate", None)
         self._piper_voice = None
         self._pyttsx_engine = None
 
@@ -174,7 +175,15 @@ class Speaker:
 
             audio = np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768.0
             audio = np.clip(audio * self.volume, -1.0, 1.0)
-            sd.play(audio, samplerate=sample_rate, device=self.output_device)
+            play_rate = self.device_sample_rate or sample_rate
+            if play_rate != sample_rate:
+                n_samples = int(len(audio) * play_rate / sample_rate)
+                audio = np.interp(
+                    np.linspace(0, len(audio) - 1, n_samples),
+                    np.arange(len(audio)),
+                    audio,
+                ).astype(np.float32)
+            sd.play(audio, samplerate=play_rate, device=self.output_device)
             sd.wait()
         except Exception:
             logger.exception("Piper playback error")
