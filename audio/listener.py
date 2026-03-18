@@ -41,7 +41,7 @@ class AudioListener:
 
     def __init__(self, config: dict):
         self.sample_rate: int = config.get("sample_rate", 16000)
-        self.device_sample_rate: int = config.get("device_sample_rate", self.sample_rate)
+        self.device_sample_rate: int = config.get("device_sample_rate") or self.sample_rate
         self.chunk_size: int = config.get("chunk_size", 1024)
         self.silence_threshold: float = config.get("silence_threshold", 0.02)
         self.silence_duration: float = config.get("silence_duration", 1.5)
