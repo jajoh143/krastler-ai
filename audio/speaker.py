@@ -164,10 +164,13 @@ class Speaker:
             buf.seek(0)
             with wave.open(buf) as wf:
                 framerate = wf.getframerate()
+                n_channels = wf.getnchannels()
                 raw = wf.readframes(wf.getnframes())
             audio = np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768.0
+            if n_channels > 1:
+                audio = audio.reshape(-1, n_channels)
             audio = np.clip(audio * self.volume, -1.0, 1.0)
-            sd.play(audio, samplerate=framerate, device=self.output_device)
+            sd.play(audio, samplerate=framerate, channels=n_channels, device=self.output_device)
             sd.wait()
         except Exception:
             logger.exception("Piper playback error")
