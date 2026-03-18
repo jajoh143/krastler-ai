@@ -24,9 +24,9 @@ personality:
 audio:
   enabled: true
 
-  input_device: "plughw:2,0"   # P10S USB Audio — plughw allows ALSA software resampling
-  output_device: "plughw:2,0"  # P10S USB Audio — plughw allows ALSA software resampling
-  device_sample_rate: null      # null = let ALSA handle resampling via plughw
+  input_device: 1               # P10S USB Audio (hw:2,0)
+  output_device: 1              # P10S USB Audio (hw:2,0)
+  device_sample_rate: 48000     # rate the USB device natively supports
   sample_rate: 16000            # internal rate for STT (Whisper expects 16000)
   chunk_size: 1024
   silence_threshold: 0.005  # RMS energy threshold (0.0–1.0); raise if too sensitive
