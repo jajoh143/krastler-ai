@@ -24,9 +24,10 @@ personality:
 audio:
   enabled: true
 
-  input_device: 1        # null = system default; use integer index to override
-  output_device: 1       # null = system default
-  sample_rate: 16000
+  input_device: 1           # P10S USB Audio (hw:2,0)
+  output_device: 1          # P10S USB Audio (hw:2,0)
+  device_sample_rate: 44100 # native rate of the USB audio device (44100 or 48000)
+  sample_rate: 16000        # internal rate for STT (Whisper expects 16000)
   chunk_size: 1024
   silence_threshold: 0.02   # RMS energy threshold (0.0–1.0); raise if too sensitive
   silence_duration: 1.5     # seconds of silence before recording stops
