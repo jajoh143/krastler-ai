@@ -24,8 +24,8 @@ personality:
 audio:
   enabled: true
 
-  input_device: null        # null = system default; use integer index to override
-  output_device: null       # null = system default
+  input_device: 1           # P10S USB Audio (hw:2,0)
+  output_device: 1          # P10S USB Audio (hw:2,0)
   sample_rate: 16000
   chunk_size: 1024
   silence_threshold: 0.02   # RMS energy threshold (0.0–1.0); raise if too sensitive
