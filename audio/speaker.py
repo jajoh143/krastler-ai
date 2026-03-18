@@ -9,11 +9,9 @@ For Piper, download a voice model first:
   python setup_models.py
 """
 
-import io
 import logging
 import os
 import re
-import wave
 from typing import Optional
 
 import numpy as np
@@ -162,22 +160,13 @@ class Speaker:
             sample_rate = self._piper_voice.config.sample_rate
             logger.debug("Piper synthesising at %d Hz: %r", sample_rate, text[:60])
 
-            buf = io.BytesIO()
-            with wave.open(buf, "wb") as wf:
-                wf.setnchannels(1)
-                wf.setsampwidth(2)  # 16-bit PCM
-                wf.setframerate(sample_rate)
-                self._piper_voice.synthesize(text, wf)
-
-            buf.seek(0)
-            with wave.open(buf) as wf:
-                n_frames = wf.getnframes()
-                raw = wf.readframes(n_frames)
-
-            if not raw:
+            # Collect raw 16-bit PCM chunks directly — avoids BytesIO/WAV roundtrip
+            chunks = list(self._piper_voice.synthesize_stream_raw(text))
+            if not chunks:
                 logger.warning("Piper produced no audio for: %r", text[:60])
                 return
 
+            raw = b"".join(chunks)
             audio = np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768.0
             audio = np.clip(audio * self.volume, -1.0, 1.0)
             logger.debug("Piper generated %d samples (%.2fs)", len(audio), len(audio) / sample_rate)
