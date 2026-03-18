@@ -148,7 +148,10 @@ def run(config: dict, args: argparse.Namespace) -> None:
 
         logger.info("Initialising audio (this may take a moment for model loading) ...")
         listener = AudioListener(audio_cfg)
-        speaker = Speaker(audio_cfg.get("tts", {}))
+        # Merge top-level audio keys (output_device, device_sample_rate, etc.)
+        # with the tts sub-config so Speaker receives both.
+        tts_cfg = {**audio_cfg, **audio_cfg.get("tts", {})}
+        speaker = Speaker(tts_cfg)
 
         if not listener.is_ready:
             logger.warning("STT not ready — falling back to text input")

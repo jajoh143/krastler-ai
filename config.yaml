@@ -29,7 +29,7 @@ audio:
   device_sample_rate: 48000 # native rate of the USB audio device (44100 or 48000)
   sample_rate: 16000        # internal rate for STT (Whisper expects 16000)
   chunk_size: 1024
-  silence_threshold: 0.02   # RMS energy threshold (0.0–1.0); raise if too sensitive
+  silence_threshold: 0.005  # RMS energy threshold (0.0–1.0); raise if too sensitive
   silence_duration: 1.5     # seconds of silence before recording stops
   min_speech_duration: 0.4  # minimum speech length to count as input
   max_record_seconds: 30
