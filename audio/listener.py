@@ -30,7 +30,6 @@ class AudioListener:
 
     def __init__(self, config: dict):
         self.sample_rate: int = config.get("sample_rate", 16000)
-        self.device_sample_rate: int = config.get("device_sample_rate", self.sample_rate)
         self.chunk_size: int = config.get("chunk_size", 1024)
         self.silence_threshold: float = config.get("silence_threshold", 0.02)
         self.silence_duration: float = config.get("silence_duration", 1.5)
@@ -109,8 +108,8 @@ class AudioListener:
         silent_chunks = 0
         speech_chunks = 0
 
-        silence_limit = int(self.silence_duration * self.device_sample_rate / self.chunk_size)
-        min_speech = int(self.min_speech_duration * self.device_sample_rate / self.chunk_size)
+        silence_limit = int(self.silence_duration * self.sample_rate / self.chunk_size)
+        min_speech = int(self.min_speech_duration * self.sample_rate / self.chunk_size)
 
         def callback(indata: np.ndarray, frames: int, time, status) -> None:
             nonlocal silent_chunks, speech_chunks
@@ -127,7 +126,7 @@ class AudioListener:
                     stop_event.set()
 
         with sd.InputStream(
-            samplerate=self.device_sample_rate,
+            samplerate=self.sample_rate,
             channels=1,
             dtype=np.float32,
             blocksize=self.chunk_size,
@@ -140,22 +139,7 @@ class AudioListener:
             return None
 
         audio = np.concatenate(audio_chunks).flatten()
-        if self.device_sample_rate != self.sample_rate:
-            audio = self._resample(audio, self.device_sample_rate, self.sample_rate)
         return self._transcribe(audio)
-
-    # ------------------------------------------------------------------
-    # Resampling
-    # ------------------------------------------------------------------
-
-    @staticmethod
-    def _resample(audio: np.ndarray, from_rate: int, to_rate: int) -> np.ndarray:
-        n_samples = int(len(audio) * to_rate / from_rate)
-        return np.interp(
-            np.linspace(0, len(audio) - 1, n_samples),
-            np.arange(len(audio)),
-            audio,
-        ).astype(np.float32)
 
     # ------------------------------------------------------------------
     # Transcription
